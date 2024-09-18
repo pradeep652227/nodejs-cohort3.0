@@ -1,0 +1,27 @@
+{
+  "name": "create-a-cli",
+  "version": "1.0.0",
+  "description": "This assignment focuses on creating a Command Line Interface using Node JS, Express JS, and Commander package",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Hello, this is a Test Command",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pradeep652227/nodejs-cohort3.0"
+  },
+  "keywords": [
+    "node",
+    "js",
+    "express",
+    "js",
+    "commander",
+    "assignment"
+  ],
+  "author": "Pradeep Gaur",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
