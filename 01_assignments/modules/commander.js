@@ -1,12 +1,12 @@
 const fs = require("fs");
 const { Command } = require("commander");
-const program = new Command();
+const Program = new Command();
 
-program.name('File Counter')
+Program.name('File Counter')
   .description('CLI to do file based tasks, mainly counting the words or sentences')
   .version('1.0.0');
 
-program.command('count_words')
+Program.command('count_words')
   .description('Counts total number of words in a file')
   .argument('<file>', 'file to count')
   .action(file => {
@@ -21,7 +21,7 @@ program.command('count_words')
     });
   });
 
-  program.command('count_sentences')
+  Program.command('count_sentences')
   .description('Counts total number of sentences in a file')
   .argument('<file>', 'file to count')
   .action(file => {
@@ -36,4 +36,4 @@ program.command('count_words')
     });
   });
 
-module.exports=program;
+module.exports=Program;

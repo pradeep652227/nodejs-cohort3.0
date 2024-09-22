@@ -22,7 +22,13 @@ const path = require("path");
 // NumberOfWords();
 
 
-/*With Commander*/
-const program=require('./modules/commander');
+/*
+//With Commander
+const Program=require('./modules/commander');
 
-program.parse();
+Program.parse();
+*/
+
+/*//Assignment-02*/
+const Program1=require('./modules/todo_cli');
+Program1.parse();
