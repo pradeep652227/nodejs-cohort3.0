@@ -22,6 +22,8 @@
   "author": "Pradeep Gaur",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.0"
+    "commander": "^12.1.0",
+    "express": "^4.21.0",
+    "path": "^0.12.7"
   }
 }
