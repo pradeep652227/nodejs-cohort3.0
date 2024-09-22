@@ -1,7 +1,7 @@
 {
-  "name": "create-a-cli",
+  "name": "01_assignments-Week 04",
   "version": "1.0.0",
-  "description": "This assignment focuses on creating a Command Line Interface using Node JS, Express JS, and Commander package",
+  "description": "This set of assignments focus on creating a Command Line Interface using Node JS, Express JS, and Commander package",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Hello, this is a Test Command",
