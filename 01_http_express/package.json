@@ -1,0 +1,29 @@
+{
+  "name": "01_http_express",
+  "version": "1.0.0",
+  "description": "http servers created using express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pradeep652227/nodejs-cohort3.0.git"
+  },
+  "keywords": [
+    "express",
+    "node",
+    "http",
+    "server"
+  ],
+  "author": "Pradeep Gaur",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pradeep652227/nodejs-cohort3.0/issues"
+  },
+  "homepage": "https://github.com/pradeep652227/nodejs-cohort3.0#readme",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
