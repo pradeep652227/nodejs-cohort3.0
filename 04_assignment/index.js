@@ -1,11 +1,13 @@
 const express = require('express');
-
+const jwt=require('jsonwebtoken');
+const env=require('./modules/.env');
+const path=require('path');
+const dotenv=require('dotenv').config({path:'./modules/.env'});
+//essential variables and instances
+const users = [];
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//essential variables and instances
-const users = [];
-const generateToken = require('./modules/generateToken');
 //middlewares
 app.use(express.json());//to parse incoming req.body object data
 
@@ -13,12 +15,11 @@ app.use(express.json());//to parse incoming req.body object data
 
 //POST
 app.post('/signup', (req, res) => {
-
+    console.log(process.env.JWT_SECRET);
     const data = req.body;
     users.push({
         username: data.username,
-        password: data.password,
-        token: data.token
+        password: data.password
     });
     console.log(users);
 
@@ -34,7 +35,10 @@ app.post('/signin', (req, res) => {
                 const token = user.token;
                 return res.send({ token });
             }
-            const token = generateToken(user.username);
+            const token = jwt.sign({
+                username:user.username
+            },process.env.JWT_SECRET);
+
             user.token = token;
             console.log(users);
         }
@@ -42,6 +46,31 @@ app.post('/signin', (req, res) => {
     }
     return res.status(400).json({ msg: 'Invalid Request object' });
 })
+
+app.get('/me', (req, res) => {
+    const token = req.headers.token; // Getting the token from the request headers
+
+    try {
+        // Verify the token using the secret key (JWT_SECRET) and decode the payload
+        const decodedInfo = jwt.verify(token, process.env.JWT_SECRET);
+
+        // decodedInfo contains the data that was signed into the token, e.g., { username: 'user1', ... }
+        
+        const username = decodedInfo.username;
+
+        const user = users.find(user => user.username === username);
+
+        if (user) {
+            res.send(user);
+        } else {
+            res.status(404).send('User Not Found');
+        }
+    } catch (err) {
+        res.status(401).send('Invalid Token');
+    }
+});
+
+
 
 //listen
 app.listen(PORT, () => {
