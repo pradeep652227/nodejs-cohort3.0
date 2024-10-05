@@ -3,6 +3,10 @@ const jwt=require('jsonwebtoken');
 const env=require('./modules/.env');
 const path=require('path');
 const dotenv=require('dotenv').config({path:'./modules/.env'});
+
+//internal modules import
+const middlewareFuncModules=require('./modules/authMiddlewareFunction');
+
 //essential variables and instances
 const users = [];
 const app = express();
@@ -10,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 //middlewares
 app.use(express.json());//to parse incoming req.body object data
-
+app.use(middlewareFuncModules.logger);
 /*Routes*/
 
 //POST
@@ -47,19 +51,10 @@ app.post('/signin', (req, res) => {
     return res.status(400).json({ msg: 'Invalid Request object' });
 })
 
-app.get('/me', (req, res) => {
-    const token = req.headers.token; // Getting the token from the request headers
-
+app.get('/me',middlewareFuncModules.authMiddFunction, (req, res) => {
     try {
-        // Verify the token using the secret key (JWT_SECRET) and decode the payload
-        const decodedInfo = jwt.verify(token, process.env.JWT_SECRET);
-
-        // decodedInfo contains the data that was signed into the token, e.g., { username: 'user1', ... }
-        
-        const username = decodedInfo.username;
-
+        const username =req.username;
         const user = users.find(user => user.username === username);
-
         if (user) {
             res.send(user);
         } else {
