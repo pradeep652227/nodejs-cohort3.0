@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 //middlewares
 app.use(express.json());//to parse incoming req.body object data
 app.use(middlewareFuncModules.logger);
+app.use(express.static(path.join(__dirname, 'public')));
 /*Routes*/
 
 //POST
@@ -26,7 +27,6 @@ app.post('/signup', (req, res) => {
         password: data.password
     });
     console.log(users);
-
     res.send('User Added');
 });
 
@@ -50,6 +50,11 @@ app.post('/signin', (req, res) => {
     }
     return res.status(400).json({ msg: 'Invalid Request object' });
 })
+
+//GET
+app.get('/',(req,res)=>{
+    res.sendFile(path.join(__dirname, 'public/html/index.html'));
+});
 
 app.get('/me',middlewareFuncModules.authMiddFunction, (req, res) => {
     try {
