@@ -1,7 +1,9 @@
 /*packages*/
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv').config();  // Load environment variables
+const path=require('path');
+const dotenv = require('dotenv').config({path:path.join(__dirname,'./modules/.env')});  // Load environment variables
+const zod=require('zod');
 
 /*internal modules*/
 const middlewares = require('./modules/middlewares');
@@ -23,8 +25,67 @@ app.use(middlewares.logger);
 // POST /signup
 app.post('/signup', async (req, res) => {
     const user = req.body;
-
-    if (user.email && user.password && user.name) {
+    const requiredBody=zod.object({
+        name:zod.string().min(3).max(100),
+        email:zod.string().min(3).max(100).email(),
+        password:zod.string().min(3).max(30)
+    }).superRefine(({ password }, checkPassComplexity) => {
+        const containsUppercase = (ch) => /[A-Z]/.test(ch);
+        const containsLowercase = (ch) => /[a-z]/.test(ch);
+        const containsSpecialChar = (ch) =>
+          /[`!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?~ ]/.test(ch);
+        let countOfUpperCase = 0,
+          countOfLowerCase = 0,
+          countOfNumbers = 0,
+          countOfSpecialChar = 0;
+    
+        for (let i = 0; i < password.length; i++) {
+          let ch = password.charAt(i);
+          if (!isNaN(+ch)) countOfNumbers++;
+          else if (containsUppercase(ch)) countOfUpperCase++;
+          else if (containsLowercase(ch)) countOfLowerCase++;
+          else if (containsSpecialChar(ch)) countOfSpecialChar++;
+        }
+    
+        let errObj = {
+          upperCase: { pass: true, message: "add upper case." },
+          lowerCase: { pass: true, message: "add lower case." },
+          specialCh: { pass: true, message: "add special ch." },
+          totalNumber: { pass: true, message: "add number." },
+        };
+    
+        if (countOfLowerCase < 1) {
+          errObj = { ...errObj, lowerCase: { ...errObj.lowerCase, pass: false } };
+        }
+        if (countOfNumbers < 1) {
+          errObj = {
+            ...errObj,
+            totalNumber: { ...errObj.totalNumber, pass: false },
+          };
+        }
+        if (countOfUpperCase < 1) {
+          errObj = { ...errObj, upperCase: { ...errObj.upperCase, pass: false } };
+        }
+        if (countOfSpecialChar < 1) {
+          errObj = { ...errObj, specialCh: { ...errObj.specialCh, pass: false } };
+        }
+    
+        if (
+          countOfLowerCase < 1 ||
+          countOfUpperCase < 1 ||
+          countOfSpecialChar < 1 ||
+          countOfNumbers < 1
+        ) {
+          checkPassComplexity.addIssue({
+            code: "custom",
+            path: ["password"],
+            message: errObj,
+          });
+        }
+      });
+    const {success,data,error}=requiredBody.safeParse(user);
+    console.log(data);
+    if (success) {
         const result = await userServices.AddUserAsync(user);
         if (result.errMsg) {
             // Respond with appropriate status code based on the error
@@ -32,7 +93,7 @@ app.post('/signup', async (req, res) => {
         }
         return res.status(201).send('User added');
     } else {
-        return res.status(400).json({ msg: 'Kindly provide complete user credentials: email, password, and name' });
+        return res.status(400).json({ msg: 'Kindly provide complete user credentials: email, password, and name',error:error });
     }
 });
 
