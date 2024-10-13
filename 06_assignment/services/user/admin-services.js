@@ -1,6 +1,10 @@
-const { AdminModel } = require('../../dbContext/mongoose');
+const { AdminModel, CourseModel } = require('../../dbContext/mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+
+function random2DigitsNumber() {
+    return Math.floor(Math.random() * 100) + 1;
+}
 
 async function AddAdminAsync(admin) {
     try {
@@ -43,7 +47,40 @@ async function FindAdminAsync({ email, password }) {
         return { errMsg: 'Internal DB Server Error at FindAdminAsync!!' };
     }
 }
+
+async function CreateCourseAsync(adminId, courseObj) {
+    try {
+        const courseSlug = courseObj.title
+        .toLowerCase()
+        .replace(/\s+/g, '-')  // Replace spaces with dashes
+        .replace(/[^a-z0-9\-]/g, '')  // Remove any special characters
+        + '-' + random2DigitsNumber() 
+        + '-' + adminId.substring(0, 10);  // Correct method for substring
+        const result = await CourseModel.create({ ...courseObj, courseSlug: courseSlug, creatorId: adminId });
+        return result;
+    } catch (err) {
+        console.log('MongoDB Error at CreateCourseAsync:', err);
+        return { errMsg: 'Internal DB Error' };
+    }
+}
+async function UpdateCourseAsync(adminId, courseId, courseObj) {
+    try {
+        const result = await CourseModel.updateOne({ _id: courseId, creatorId: adminId }, courseObj);
+        if (result.matchedCount == 0)
+            return { errMsg: 'This Course created by this Admin is not found!!', statusCode: 404 }
+        else if (result.modifiedCount == 0)
+            return { errMsg: 'This Course created by this Admin is not updated!!', statusCode: 204 }
+        else
+            return result;
+    } catch (err) {
+        console.log(err);
+        return { errMsg: 'DB Error in Updating the Course', statusCode: 500 };
+    }
+}
+
 module.exports = {
     AddAdminAsync,
-    FindAdminAsync
+    FindAdminAsync,
+    CreateCourseAsync,
+    UpdateCourseAsync
 }

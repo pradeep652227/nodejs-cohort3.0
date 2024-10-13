@@ -1,4 +1,4 @@
-const { Router } = require('express');
+const { Router, json } = require('express');
 const router = Router();
 const path = require('path');
 const zod = require('zod');
@@ -93,12 +93,39 @@ router.post('/signin', async (req, res) => {
 });
 
 //Below it are the authorized routes
-router.use(authMidd);
+router.use(authMidd(JWT_SECRET));
 
-router.put("/course", (req, res) => {
-    res.json({
-        msg: 'Put endoint'
+router.post("/create-course", async (req, res) => {
+    const courseObj = req.body;
+    const adminId = req.Id;
+    //validate the courseObj first
+    const requiredCourse = zod.object({
+        title: zod.string(),
+        description: zod.string(),
+        price: zod.number(),
+        imageUrl: zod.string()
     });
+    const { success, error } = requiredCourse.safeParse(courseObj);
+    if (success) {
+        const result = await adminServices.CreateCourseAsync(adminId, courseObj);
+        return res.json(result);
+    }
+    return res.status(401).json({ msg: 'Course object validation failed.', error: error });
+})
+
+router.put("/course", async (req, res) => {
+    const adminId = req.Id;
+    const courseObj = req.body;
+    const courseId = courseObj._id;
+    //remove sensitive fields from the object
+    delete courseObj.creatorId;
+    delete courseObj._id;
+
+    const result = await adminServices.UpdateCourseAsync(adminId, courseId, courseObj);
+    if (result.errMsg) {
+        return res.status(result.statusCode).json({ msg: result.errMsg });
+    }
+    return res.json(result);  // Return success response
 });
 
 router.get("/course/bulk", (req, res) => {

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const path = require('path');
+const { title } = require('process');
 const dotenv = require('dotenv').config({ path: path.resolve(__dirname, '../config/.env') });
 
 const ObjectId=mongoose.Schema.Types.ObjectId;
@@ -32,7 +33,7 @@ const AdminSchema=new Schema({
 const CourseSchema = new Schema({
     title: { type: String, required: true },
     description: { type: String },
-    courseSlug:String,
+    courseSlug:{type:String,unique:true},
     price:Number,
     imageUrl:String,
     creatorId:{type:ObjectId,ref:'Admin'},
@@ -44,6 +45,8 @@ const PurchasesScehma=new Schema({
     courseId:ObjectId,
     userId:ObjectId
 });
+
+PurchasesScehma.index({ courseId: 1, userId: 1 }, { unique: true });
 
 const UserModel=new mongoose.model("User",UserSchema);
 const CourseModel=new mongoose.model("Course",CourseSchema);

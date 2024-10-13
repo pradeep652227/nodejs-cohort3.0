@@ -96,8 +96,11 @@ router.post('/signin', async (req, res) => {
     }
 });
 
+//All the routes after it are authorized
+router.use(authMidd(JWT_SECRET));
+
 /* GET routes */
-router.get('/purchases', authMidd, (req, res) => {
+router.get('/purchases',  (req, res) => {
     // Purchases route logic
     res.send('hello, you are accessing /user/purchases route');
 });
