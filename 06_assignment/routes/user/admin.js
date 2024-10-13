@@ -5,16 +5,13 @@ const zod = require('zod');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config({ path: path.resolve(__dirname, '../../config/.env') });
 const { authMidd } = require('../../middlewares/middleware-imports');
-const { userServices } = require('../../services/service-imports');
+const { adminServices } = require('../../services/service-imports');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET_ADMIN;
 
-/* Base Route: /user */
-
-/* POST Routes */
 router.post('/signup', async (req, res) => {
     try {
-        const user = req.body;
+        const admin = req.body;
         const requiredBody = zod.object({
             firstName: zod.string().min(3).max(100),
             lastName: zod.string().min(3).max(100),
@@ -57,49 +54,57 @@ router.post('/signup', async (req, res) => {
                 });
             }
         });
-
-        const { success, error } = requiredBody.safeParse(user);
+        const { success, error } = requiredBody.safeParse(admin);
         if (success) {
-            const result = await userServices.AddUserAsync(user);  // Correctly renamed from 'res' to 'result'
-
-            return (result.errMsg) ? (res.status(401).json({ msg: result.errMsg })) : res.json({ msg: 'User Added' });
-
+            const result = await adminServices.AddAdminAsync(admin);
+            return result.errMsg ? res.status(result.statusCode).json({ msg: result.errMsg })
+                : res.json({ msg: 'Admin Added' });
         }
-        return res.status(400).json({ msg: 'Kindly provide complete User Credentials!!', error: error });
+        return res.status(400).json({ msg: 'Kindly provide Correct/Complete Admin Credentials', error: error });
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ msg: 'Internal Server Error' });
+        return res.status(500).json({ msg: 'Internal Server Error at /admin/signup route' });
     }
-});
+})
 
 router.post('/signin', async (req, res) => {
-    // Signin route to be implemented
     try {
-        const userCreds = req.body;
+        const adminCreds = req.body;
         const requiredBody = zod.object({
             email: zod.string().email(),
-            password: zod.string()
+            password: zod.string().min(8)
         });
-        const { success, error } = requiredBody.safeParse(userCreds);
+        const { success, error } = requiredBody.safeParse(adminCreds);
         if (success) {
-            const result = await userServices.FindUserAsync(userCreds);
-            //signing the token
-            const token = jwt.sign({ id: result._id }, JWT_SECRET);
-            res.header("authorization",token);
-            return (result.errMsg) ? res.status(403).json({ msg: errMsg }) : res.json({ user: result });
+            const result = await adminServices.FindAdminAsync(adminCreds);
+            if (!result.errMsg) {
+                const token = jwt.sign({ id: result._id }, JWT_SECRET);
+                res.header("authorization", token);
+                return res.send(result);
+            }
+            return res.status(result.statusCode).json({ msg: result.errMsg });
         }
-        return res.status(400).json({ msg: 'Kindly provide complete User Credentials!!', error: error });
+        return res.status(400).json({ msg: 'Kindly provide Correct/Complete Admin Credentials', error: error });
     }
     catch (err) {
         console.log(err);
-        return res.status(500).json({ msg: 'Internal Server Error' });
+        return res.status(500).json({ msg: 'Internal Server Error at /admin/signin route' });
     }
 });
 
-/* GET routes */
-router.get('/purchases', authMidd, (req, res) => {
-    // Purchases route logic
-    res.send('hello, you are accessing /user/purchases route');
+//Below it are the authorized routes
+router.use(authMidd);
+
+router.put("/course", (req, res) => {
+    res.json({
+        msg: 'Put endoint'
+    });
+});
+
+router.get("/course/bulk", (req, res) => {
+    res.json({
+        msg: '/admin/course/bulk route'
+    });
 });
 
 module.exports = router;

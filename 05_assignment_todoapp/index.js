@@ -89,7 +89,7 @@ app.post('/signup', async (req, res) => {
         const result = await userServices.AddUserAsync(user);
         if (result.errMsg) {
             // Respond with appropriate status code based on the error
-            return res.status(400).json({ msg: result.error });
+            return res.status(400).json({ msg: result.errMsg });
         }
         return res.status(201).send('User added');
     } else {
